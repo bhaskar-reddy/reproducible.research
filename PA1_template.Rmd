@@ -1,0 +1,60 @@
+Activity Monitor
+========================================================
+
+Lets set the global options here
+
+```{r setoptions, echo=FALSE}
+library(knitr)
+opts_chunk$set(echo=TRUE)
+```
+
+Check file exists
+
+```{r checkfile}
+zipfile <- file.path(getwd(), "repdata-data-activity.zip")
+
+if (!file.exists(zipfile)) {
+        url <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
+        
+        download.file(url, zipfile, method="curl")
+        dateDownloaded <- date()
+        
+        ## unzip file, saves as 'activity.csv'
+        f <- unzip(zipfile)
+} else {
+        ## if file exists, get file path
+        f <- file.path(getwd(), "activity.csv")
+}
+```
+
+Let us load the data
+```{r loaddata}
+library(data.table)
+activity.data <- fread(f, sep=",", na.strings="NA")
+```
+
+Ignoring missing values, lets make 
+        
+1. histogram of total number of steps taken each day
+
+```{r drawHistgram}
+## ignore/filter missing values
+activity.data <- na.omit(activity.data)
+
+## Aggregate the sum total of the number of steps taken each day
+agg <- aggregate(steps ~ date, data=activity.data, sum)
+
+## 1. Now, make a histogram of the total number of steps taken for each day
+hist(agg$steps, col="blue", main="Total steps taken each day", xlab="No. of steps")
+```
+
+2. Calculate and report mean and median number of steps taken each day
+```{r calcMeanMedian, results='asis'}
+meanv1 <- aggregate(steps ~ date, data=activity.data, FUN=mean)
+medianv1 <-  aggregate(steps ~ date, data=activity.data, FUN=median)
+
+meanv2 <- mean(agg$steps)
+medianv2 <- median(agg$steps)
+```
+
+The mean value is `r meanv2`, while the median is `r medianv2`  
